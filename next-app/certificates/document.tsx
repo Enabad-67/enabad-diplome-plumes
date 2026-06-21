@@ -21,7 +21,6 @@ export function CertificatesDocument({
       {players.map((player) => (
         <CertificatePage
           key={`${player.rowIndex}-${player.displayName}`}
-          pageId={`${player.rowIndex}`}
           plume={player.plume}
           playerName={player.displayName}
           issuedAt={issuedAt}

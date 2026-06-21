@@ -12,7 +12,6 @@ type CertificatePageProps = {
   playerName: string
   issuedAt: string
   signatures: Signatures
-  pageId: string
 }
 
 export function CertificatePage({
@@ -20,7 +19,6 @@ export function CertificatePage({
   playerName,
   issuedAt,
   signatures,
-  pageId,
 }: CertificatePageProps) {
   const props = { playerName, issuedAt, signatures }
 
@@ -28,9 +26,7 @@ export function CertificatePage({
     case "rouge":
       return <PlumeRougePage {...props} />
     case "jaune":
-      return (
-        <PlumeJaunePage {...props} gradientId={`grad-${pageId}`} />
-      )
+      return <PlumeJaunePage {...props} />
     case "verte":
       return <PlumeVertePage {...props} />
     case "bleue":
