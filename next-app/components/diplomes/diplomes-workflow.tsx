@@ -1,7 +1,7 @@
 "use client"
 
-import { FileUp, Loader2 } from "lucide-react"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { FileDown, FileUp, Loader2 } from "lucide-react"
+import { useCallback, useMemo, useRef, useState, type FocusEvent } from "react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
@@ -22,9 +22,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { todayIsoDate } from "@/lib/certificates/format-date"
+import {
+  formatIsoToShortDate,
+  parseShortDateToIso,
+  todayIsoDate,
+} from "@/lib/certificates/format-date"
 import { parseWorkbookBuffer } from "@/lib/excel/parse-workbook"
 import type { ParseResult } from "@/lib/excel/types"
+import type { PlumeColor } from "@/lib/plumes/types"
+import { PLUME_COLORS } from "@/lib/plumes/types"
 
 const PLUME_LABELS: Record<string, string> = {
   rouge: "Plume rouge",
@@ -38,9 +44,15 @@ export function DiplomesWorkflow() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
   const [issuedAt, setIssuedAt] = useState(todayIsoDate())
+  const [issuedAtDisplay, setIssuedAtDisplay] = useState(() =>
+    formatIsoToShortDate(todayIsoDate()),
+  )
   const [parseResult, setParseResult] = useState<ParseResult | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [downloadingPlume, setDownloadingPlume] = useState<PlumeColor | null>(
+    null,
+  )
   const [apiError, setApiError] = useState<string | null>(null)
 
   const processFile = useCallback(async (selected: File) => {
@@ -129,6 +141,39 @@ export function DiplomesWorkflow() {
     }
   }, [file, canGenerate, issuedAt])
 
+  const downloadBlankPdf = useCallback(async (plume: PlumeColor) => {
+    setDownloadingPlume(plume)
+    setApiError(null)
+
+    try {
+      const response = await fetch(
+        `/api/certificates/blank?plume=${encodeURIComponent(plume)}`,
+      )
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string }
+        setApiError(payload.error ?? "Le téléchargement du modèle vierge a échoué.")
+        return
+      }
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement("a")
+      anchor.href = url
+      anchor.download = `diplome-plume-${plume}-vierge.pdf`
+      anchor.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      setApiError(
+        error instanceof Error
+          ? error.message
+          : "Erreur réseau lors du téléchargement.",
+      )
+    } finally {
+      setDownloadingPlume(null)
+    }
+  }, [])
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-6">
       <div>
@@ -143,11 +188,41 @@ export function DiplomesWorkflow() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Modèles vierges</CardTitle>
+          <CardDescription>
+            Téléchargez un diplôme vierge (sans nom ni date) pour chaque
+            couleur de plume, à remplir à la main ou à l&apos;impression.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {PLUME_COLORS.map((plume) => (
+              <Button
+                key={plume}
+                variant="outline"
+                disabled={downloadingPlume != null}
+                onClick={() => downloadBlankPdf(plume)}
+              >
+                {downloadingPlume === plume ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <FileDown />
+                )}
+                {PLUME_LABELS[plume]}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>1. Fichier Excel</CardTitle>
           <CardDescription>
-            Colonnes attendues : Club, Sexe, Nom d&apos;usage, Prénom, Licence,
-            Année de naissance, Email de contact, Catégorie, Meilleur plume,
-            Plume à passer.
+            Colonnes obligatoires : Club, Nom d&apos;usage, Prénom, Meilleure
+            plume. Colonnes optionnelles : Sexe, Licence, Année de naissance,
+            Email de contact, Catégorie, Plume à passer (sinon la meilleure
+            plume détermine le diplôme).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -203,9 +278,20 @@ export function DiplomesWorkflow() {
         </CardHeader>
         <CardContent>
           <Input
-            type="date"
-            value={issuedAt}
-            onChange={(e) => setIssuedAt(e.target.value)}
+            type="text"
+            inputMode="numeric"
+            placeholder="jj/mm/aaaa"
+            value={issuedAtDisplay}
+            onChange={(e) => setIssuedAtDisplay(e.target.value)}
+            onBlur={(e: FocusEvent<HTMLInputElement>) => {
+              const parsed = parseShortDateToIso(e.target.value)
+              if (parsed) {
+                setIssuedAt(parsed)
+                setIssuedAtDisplay(formatIsoToShortDate(parsed))
+              } else {
+                setIssuedAtDisplay(formatIsoToShortDate(issuedAt))
+              }
+            }}
             className="max-w-xs"
           />
         </CardContent>

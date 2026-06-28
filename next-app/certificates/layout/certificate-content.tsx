@@ -64,6 +64,22 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     textTransform: "uppercase",
   },
+  blankField: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#333333",
+    width: 180,
+    marginBottom: 2,
+  },
+  blankDateField: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#333333",
+    width: 100,
+    marginBottom: 2,
+  },
+  playerLabelRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
   signaturesRow: {
     width: "100%",
     flexDirection: "row",
@@ -120,6 +136,7 @@ type CertificateContentProps = {
   playerName: string
   issuedAt: string
   signatures: Signatures
+  blank?: boolean
 }
 
 export function CertificateContent({
@@ -127,6 +144,7 @@ export function CertificateContent({
   playerName,
   issuedAt,
   signatures,
+  blank = false,
 }: CertificateContentProps) {
   return (
     <View style={styles.content}>
@@ -144,10 +162,25 @@ export function CertificateContent({
       </Text>
 
       <View style={styles.playerRow}>
-        <Text>
-          Au joueur <Text style={styles.playerName}>{playerName}</Text>
-        </Text>
-        <Text>le {issuedAt}</Text>
+        {blank ? (
+          <>
+            <View style={styles.playerLabelRow}>
+              <Text>Au joueur </Text>
+              <View style={styles.blankField} />
+            </View>
+            <View style={styles.playerLabelRow}>
+              <Text>le </Text>
+              <View style={styles.blankDateField} />
+            </View>
+          </>
+        ) : (
+          <>
+            <Text>
+              Au joueur <Text style={styles.playerName}>{playerName}</Text>
+            </Text>
+            <Text>le {issuedAt}</Text>
+          </>
+        )}
       </View>
 
       <View style={styles.signaturesRow}>

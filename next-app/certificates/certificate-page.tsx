@@ -12,6 +12,7 @@ type CertificatePageProps = {
   playerName: string
   issuedAt: string
   signatures: Signatures
+  blank?: boolean
 }
 
 export function CertificatePage({
@@ -19,8 +20,9 @@ export function CertificatePage({
   playerName,
   issuedAt,
   signatures,
+  blank = false,
 }: CertificatePageProps) {
-  const props = { playerName, issuedAt, signatures }
+  const props = { playerName, issuedAt, signatures, blank }
 
   switch (plume) {
     case "rouge":

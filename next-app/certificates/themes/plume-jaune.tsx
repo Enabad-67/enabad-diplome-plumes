@@ -7,12 +7,14 @@ type PlumeJaunePageProps = {
   playerName: string
   issuedAt: string
   signatures: Signatures
+  blank?: boolean
 }
 
 export function PlumeJaunePage({
   playerName,
   issuedAt,
   signatures,
+  blank,
 }: PlumeJaunePageProps) {
   return (
     <CertificatePageLayout
@@ -21,6 +23,7 @@ export function PlumeJaunePage({
       playerName={playerName}
       issuedAt={issuedAt}
       signatures={signatures}
+      blank={blank}
     />
   )
 }

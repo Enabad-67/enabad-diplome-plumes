@@ -1,5 +1,13 @@
 export type PlumeColor = "rouge" | "jaune" | "verte" | "bleue" | "blanche"
 
+export const PLUME_COLORS: PlumeColor[] = [
+  "rouge",
+  "jaune",
+  "verte",
+  "bleue",
+  "blanche",
+]
+
 export type PlumeTheme = {
   id: PlumeColor
   plumeLabel: string

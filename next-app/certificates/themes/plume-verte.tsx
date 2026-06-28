@@ -7,12 +7,14 @@ type PlumeVertePageProps = {
   playerName: string
   issuedAt: string
   signatures: Signatures
+  blank?: boolean
 }
 
 export function PlumeVertePage({
   playerName,
   issuedAt,
   signatures,
+  blank,
 }: PlumeVertePageProps) {
   return (
     <CertificatePageLayout
@@ -21,6 +23,7 @@ export function PlumeVertePage({
       playerName={playerName}
       issuedAt={issuedAt}
       signatures={signatures}
+      blank={blank}
     />
   )
 }

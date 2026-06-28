@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx"
 
 import { resolveColumnKey } from "./columns"
-import type { ParseResult, PlayerRow, RequiredColumn, RowError } from "./types"
+import type { ParseResult, PlayerRow, ExcelColumn, RowError } from "./types"
 import { REQUIRED_COLUMNS } from "./types"
 import { normalizePlume } from "@/lib/plumes/normalize"
 
@@ -44,7 +44,7 @@ export function parseWorkbookBuffer(buffer: ArrayBuffer): ParseResult {
   }
 
   const headers = Object.keys(rawRows[0] ?? {})
-  const columnMap = new Map<number, RequiredColumn>()
+  const columnMap = new Map<number, ExcelColumn>()
 
   headers.forEach((header, index) => {
     const column = resolveColumnKey(header)
@@ -69,7 +69,7 @@ export function parseWorkbookBuffer(buffer: ArrayBuffer): ParseResult {
     }
   }
 
-  const headerToColumn = new Map<string, RequiredColumn>()
+  const headerToColumn = new Map<string, ExcelColumn>()
   headers.forEach((header) => {
     const column = resolveColumnKey(header)
     if (column) {
@@ -83,7 +83,7 @@ export function parseWorkbookBuffer(buffer: ArrayBuffer): ParseResult {
 
   rawRows.forEach((rawRow, index) => {
     const rowIndex = index + 2
-    const values: Partial<Record<RequiredColumn, string>> = {}
+    const values: Partial<Record<ExcelColumn, string>> = {}
 
     for (const [header, column] of headerToColumn.entries()) {
       values[column] = cellToString(rawRow[header])
@@ -91,7 +91,10 @@ export function parseWorkbookBuffer(buffer: ArrayBuffer): ParseResult {
 
     const prenom = values["Prénom"] ?? ""
     const nomUsage = values["Nom d'usage"] ?? ""
-    const plumeRaw = values["Plume à passer"] ?? ""
+    const club = values.Club ?? ""
+    const meilleurPlume = values["Meilleur plume"] ?? ""
+    const plumeAPasser = values["Plume à passer"] ?? ""
+    const plumeRaw = plumeAPasser || meilleurPlume
 
     if (!prenom && !nomUsage) {
       warnings.push({
@@ -109,18 +112,35 @@ export function parseWorkbookBuffer(buffer: ArrayBuffer): ParseResult {
       return
     }
 
-    const plume = normalizePlume(plumeRaw)
-    if (!plume) {
+    if (!club) {
       errors.push({
         rowIndex,
-        message: `Plume à passer non reconnue : « ${plumeRaw || "(vide)"} ».`,
+        message: "Club manquant.",
+      })
+      return
+    }
+
+    if (!meilleurPlume) {
+      errors.push({
+        rowIndex,
+        message: "Meilleure plume manquante.",
+      })
+      return
+    }
+
+    const plume = normalizePlume(plumeRaw)
+    if (!plume) {
+      const plumeSource = plumeAPasser ? "Plume à passer" : "Meilleure plume"
+      errors.push({
+        rowIndex,
+        message: `${plumeSource} non reconnue : « ${plumeRaw || "(vide)"} ».`,
       })
       return
     }
 
     rows.push({
       rowIndex,
-      club: values.Club ?? "",
+      club,
       sexe: values.Sexe ?? "",
       nomUsage,
       prenom,
@@ -128,8 +148,8 @@ export function parseWorkbookBuffer(buffer: ArrayBuffer): ParseResult {
       anneeNaissance: values["Année de naissance"] ?? "",
       email: values["Email de contact"] ?? "",
       categorie: values.Catégorie ?? "",
-      meilleurPlume: values["Meilleur plume"] ?? "",
-      plumeAPasser: plumeRaw,
+      meilleurPlume,
+      plumeAPasser: plumeAPasser || meilleurPlume,
       plume,
       displayName: buildDisplayName(prenom, nomUsage),
     })

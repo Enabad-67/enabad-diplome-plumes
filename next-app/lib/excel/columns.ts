@@ -1,6 +1,6 @@
-import type { RequiredColumn } from "./types"
+import type { ExcelColumn } from "./types"
 
-const COLUMN_ALIASES: Record<RequiredColumn, string[]> = {
+const COLUMN_ALIASES: Record<ExcelColumn, string[]> = {
   Club: ["club"],
   Sexe: ["sexe"],
   "Nom d'usage": ["nom d'usage", "nom d usage", "nom"],
@@ -31,13 +31,11 @@ export function normalizeHeader(header: string): string {
   return stripAccents(header).toLowerCase().trim().replace(/\s+/g, " ")
 }
 
-export function resolveColumnKey(
-  header: string,
-): RequiredColumn | null {
+export function resolveColumnKey(header: string): ExcelColumn | null {
   const normalized = normalizeHeader(header)
 
   for (const [column, aliases] of Object.entries(COLUMN_ALIASES) as [
-    RequiredColumn,
+    ExcelColumn,
     string[],
   ][]) {
     if (

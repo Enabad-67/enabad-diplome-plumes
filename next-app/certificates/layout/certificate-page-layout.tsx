@@ -30,6 +30,7 @@ type CertificatePageLayoutProps = {
   playerName: string
   issuedAt: string
   signatures: Signatures
+  blank?: boolean
 }
 
 export function CertificatePageLayout({
@@ -38,6 +39,7 @@ export function CertificatePageLayout({
   playerName,
   issuedAt,
   signatures,
+  blank = false,
 }: CertificatePageLayoutProps) {
   return (
     <Page size="A4" orientation="landscape" style={styles.page}>
@@ -48,6 +50,7 @@ export function CertificatePageLayout({
           playerName={playerName}
           issuedAt={issuedAt}
           signatures={signatures}
+          blank={blank}
         />
       </View>
     </Page>

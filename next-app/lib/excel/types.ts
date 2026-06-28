@@ -2,18 +2,27 @@ import type { PlumeColor } from "@/lib/plumes/types"
 
 export const REQUIRED_COLUMNS = [
   "Club",
-  "Sexe",
   "Nom d'usage",
   "Prénom",
+  "Meilleur plume",
+] as const
+
+export const OPTIONAL_COLUMNS = [
+  "Sexe",
   "Licence",
   "Année de naissance",
   "Email de contact",
   "Catégorie",
-  "Meilleur plume",
   "Plume à passer",
 ] as const
 
+export const ALL_COLUMNS = [
+  ...REQUIRED_COLUMNS,
+  ...OPTIONAL_COLUMNS,
+] as const
+
 export type RequiredColumn = (typeof REQUIRED_COLUMNS)[number]
+export type ExcelColumn = (typeof ALL_COLUMNS)[number]
 
 export type PlayerRow = {
   rowIndex: number
