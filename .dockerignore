@@ -1,0 +1,34 @@
+# Dependencies
+**/node_modules
+**/.pnpm-store
+
+# Next.js
+**/.next
+**/out
+
+# Git
+.git
+.gitignore
+
+# Env (never in image)
+**/.env
+**/.env.*
+!**/.env.example
+
+# Dev / test
+**/coverage
+**/*.md
+!next-app/config/**/*.md
+!config/**/*.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups & uploads (runtime on VPS)
+backups/
+uploads/
+
+# Local DB dumps
+*.sql
+*.sql.gz

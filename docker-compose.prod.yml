@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  enabad-diplome-plumes-app:
+    image: ${DOCKER_IMAGE_NAME}
+    container_name: enabad-diplome-plumes-app
+    restart: unless-stopped
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    volumes:
+      - ./config:/app/config
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    external: true
+    name: proxiable
